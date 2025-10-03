@@ -1,7 +1,10 @@
-/* BitGrid 64 — v1.3 (©2025 pezzaliAPP, MIT)
- * - Sizing con visualViewport (iOS Safari safe)
- * - Canvas sempre visibile (clamp, border)
- * - Restyling minore
+/* BitGrid 64 — v1.4 (©2025 pezzaliAPP, MIT)
+ * Fix critici dalla v1.3:
+ *  - header/hud/dpadBox/actBox mancanti -> ReferenceError
+ *  - DPR dichiarato due volte -> SyntaxError
+ *  - inizializzazione ordine fit() + scramble()
+ * Altri:
+ *  - visualViewport sizing (iOS), clamps e grid pixel-perfect
  */
 (() => {
   const canvas = document.getElementById('game');
@@ -22,6 +25,7 @@
   const actA = document.getElementById('actA');
   const actB = document.getElementById('actB');
 
+  // MANCAVANO: usati in fit()
   const header = document.querySelector('header');
   const hud = document.querySelector('.hud');
   const dpadBox = document.querySelector('.dpad');
@@ -133,9 +137,7 @@
         }
       }
     }
-    // scanlines
     for (let i=0;i<h;i+=4){ ctx.fillStyle='rgba(255,255,255,0.02)'; ctx.fillRect(0,i,w,1); }
-
     ctx.restore();
   }
 
@@ -200,7 +202,7 @@
     else if (e.key==='ArrowLeft'||e.key==='a'||e.key==='A'){ S.cursor.x = Math.max(0, S.cursor.x-1); draw(); }
     else if (e.key==='ArrowRight'||e.key==='d'||e.key==='D'){ S.cursor.x = Math.min(S.size-1, S.cursor.x+1); draw(); }
     else if (e.key===' '|| e.key==='Enter'){ activate(S.cursor.x, S.cursor.y); }
-    else if (e.key==='h'){ toggleHelp(); }
+    else if (e.key==='h'){ panel.style.display = panel.style.display==='flex' ? 'none' : 'flex'; }
   });
 
   dpad.up.addEventListener('pointerdown', ()=>{ S.cursor.y=Math.max(0,S.cursor.y-1); draw(); });
@@ -233,7 +235,6 @@
   }
 
   // --- Fit using visualViewport for iOS
-  let DPR = 1;
   function fit(){
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     DPR = dpr;
@@ -244,11 +245,8 @@
     const controlsH = Math.max(dpadBox?.offsetHeight || 120, actBox?.offsetHeight || 120);
     const hudH = hud?.offsetHeight || 38;
 
-    // reserved space so canvas never hides behind controls
     const reserved = headerH + controlsH + hudH + 64;
     let cssSize = Math.floor(Math.min(vw*0.96, vh - reserved));
-
-    // clamps
     if (!isFinite(cssSize) || cssSize < 200) cssSize = Math.floor(Math.min(vw*0.96, vh*0.60));
 
     hud.style.bottom = `${(controlsH + 20)}px`;
@@ -262,7 +260,8 @@
   }
   addEventListener('resize', fit);
   addEventListener('orientationchange', fit);
-  setTimeout(fit, 0);
-  // Start game
-  scramble(S.level + 3);
+
+  // Ordine corretto di bootstrap
+  fit();                  // dimensiona il canvas
+  scramble(S.level + 3);  // genera il livello e disegna
 })();
