@@ -6,7 +6,6 @@
   <meta name="theme-color" content="#1b1f2a">
   <title>BitGrid 64 — Retro PWA</title>
 
-  <!-- iOS install banners -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BitGrid64">
@@ -18,7 +17,6 @@
   <meta name="description" content="Rompicapo retro in stile Commodore 64 / ZX Spectrum. Togli le luci, superi i livelli. PWA nativa per iOS e Android.">
 
   <style>
-    /* ====== CSS variables for themes ====== */
     :root {
       --bg: #0b0f1a;
       --panel: #101626;
@@ -32,13 +30,10 @@
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";}
     body{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
-    .crt {
-      position: fixed; inset:0; pointer-events:none; opacity:.25;
-      background:
-        repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 2px, transparent 2px 4px),
-        radial-gradient(ellipse at center, rgba(255,255,255,.06), transparent 60%);
-      mix-blend-mode: overlay;
-    }
+    .crt {position: fixed; inset:0; pointer-events:none; opacity:.25;
+      background: repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 2px, transparent 2px 4px),
+                  radial-gradient(ellipse at center, rgba(255,255,255,.06), transparent 60%);
+      mix-blend-mode: overlay;}
     .wrap{display:flex;flex-direction:column;min-height:100%;}
     header{
       display:flex;align-items:center;justify-content:space-between;gap:.75rem;
@@ -57,15 +52,18 @@
     button.icon:active{transform:translateY(1px);box-shadow:0 1px 0 #0a0f1b inset, 0 3px 12px rgba(0,0,0,.35);}
     button.primary{background:linear-gradient(180deg, #1b2a3f, #0e1a2e); padding:.6rem .9rem; border-radius:.8rem; border:1px solid #274060}
     main{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem;position:relative}
-    canvas#game{width:min(92vw, 540px);height: min(92vw, 540px);aspect-ratio:1;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740}
-    .hud{position:absolute;bottom:1rem;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+    /* Reserve space at bottom for controls so the canvas never ends under Safari bar */
+    main{padding-bottom:calc(env(safe-area-inset-bottom) + 160px);}
+    canvas#game{aspect-ratio:1;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740}
+    .hud{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
+    .hud{bottom:calc(env(safe-area-inset-bottom) + 120px);}
     .pill{background:var(--panel);border:1px solid #27314b;border-radius:999px;padding:.3rem .7rem;color:var(--muted);font-size:.9rem}
-    .dpad{position:fixed;left:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.35rem;opacity:.96;z-index:10}
-    .drow{display:flex;gap:.35rem;justify-content:center}
-    .btn{width:60px;height:60px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
+    .dpad{position:fixed;left:1rem;bottom:calc(0.8rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.3rem;opacity:.96;z-index:10}
+    .drow{display:flex;gap:.3rem;justify-content:center}
+    .btn{width:52px;height:52px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
     .btn:active{transform:translateY(2px)}
-    .act{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));display:flex;gap:.6rem;opacity:.96;z-index:10}
-    .a,.b{width:66px;height:66px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
+    .act{position:fixed;right:1rem;bottom:calc(0.8rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;opacity:.96;z-index:10}
+    .a,.b{width:58px;height:58px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
     .toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);background:#0e1a2e;border:1px solid #274060;padding:.6rem 1rem;border-radius:.7rem;color:var(--ink);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s; box-shadow:0 14px 40px rgba(0,0,0,.35)}
     .toast.show{opacity:1;transform:translate(-50%,0)}
     .panel{position:fixed;inset:0;background:rgba(3,6,12,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:20}
@@ -77,9 +75,6 @@
     .foot{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap}
     .link{color:var(--accent);text-decoration:none}
     .hidden{display:none}
-    @media (min-width: 768px){
-      .dpad,.act{bottom:1.2rem}
-    }
   </style>
 </head>
 <body>

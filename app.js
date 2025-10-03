@@ -1,4 +1,9 @@
-/* BitGrid 64 — v1.0 (©2025 pezzaliAPP, MIT) */
+/* BitGrid 64 — v1.1 (©2025 pezzaliAPP, MIT)
+ * Fix: canvas non tagliato su iPhone
+ * - Calcolo dimensione canvas in base a viewport, header, HUD e controlli
+ * - HUD rialzata sopra i controlli
+ * - Pulsanti più piccoli, vibrazione haptics
+ */
 (() => {
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
@@ -16,6 +21,11 @@
   const dpad = {up:document.getElementById('up'),down:document.getElementById('down'),left:document.getElementById('left'),right:document.getElementById('right')};
   const actA = document.getElementById('actA');
   const actB = document.getElementById('actB');
+
+  const header = document.querySelector('header');
+  const hud = document.querySelector('.hud');
+  const dpadBox = document.querySelector('.dpad');
+  const actBox = document.querySelector('.act');
 
   // --- Settings ---
   const S = {
@@ -53,6 +63,7 @@
     o.connect(g); g.connect(audioCtx.destination);
     o.start(); o.stop(audioCtx.currentTime + dur);
   }
+  function haptic(ms=12){ if (navigator.vibrate) try{ navigator.vibrate(ms); }catch(e){} }
 
   // --- Utilities ---
   function makeSolved(n){ return new Array(n*n).fill(0); }
@@ -66,7 +77,6 @@
     }
   }
   function isSolved(g){ return g.every(v => v===0); }
-  function clone(a){ return a.slice(); }
 
   function scramble(steps=8){
     grid = makeSolved(S.size);
@@ -100,22 +110,18 @@
       ? ['#0b0f1a','#64ffff','#73ae58','#b86962','#40318d']
       : ['#000','#2aff2a','#ff2a2a','#2a2aff','#ffff2a'];
 
-    // Grid glow bg
     ctx.fillStyle = '#060912';
     ctx.fillRect(0,0,w,h);
 
-    // Draw cells
     for (let y=0;y<size;y++){
       for (let x=0;x<size;x++){
         const on = grid[idx(x,y)]===1;
         const cx = ox + x*(cellSize+cellGap);
         const cy = oy + y*(cellSize+cellGap);
 
-        // cell body
         ctx.fillStyle = on ? palette[1] : '#0e1322';
         roundRect(ctx, cx, cy, cellSize, cellSize, 10, true, false);
 
-        // inner highlight
         if (on){
           const g = ctx.createRadialGradient(cx+cellSize/2, cy+cellSize/2, 4, cx+cellSize/2, cy+cellSize/2, cellSize/1.2);
           g.addColorStop(0, palette[1] + 'cc');
@@ -124,12 +130,10 @@
           ctx.fillRect(cx-8, cy-8, cellSize+16, cellSize+16);
         }
 
-        // stroke
         ctx.strokeStyle = '#1b2a3f';
         ctx.lineWidth = 2;
         roundRect(ctx, cx, cy, cellSize, cellSize, 10, false, true);
 
-        // cursor
         if (S.cursor.x===x && S.cursor.y===y){
           ctx.strokeStyle = palette[4];
           ctx.lineWidth = 3;
@@ -138,13 +142,10 @@
       }
     }
 
-    // scanline shimmer
     for (let i=0;i<h;i+=4){
       ctx.fillStyle = 'rgba(255,255,255,0.02)';
       ctx.fillRect(0,i,w,1);
     }
-
-    requestAnimationFrame(()=>{});
   }
 
   function roundRect(ctx, x, y, w, h, r, fill, stroke) {
@@ -169,13 +170,13 @@
     toggleAt(grid,x,y);
     S.moves++; updateHUD(); draw();
     beep(220, .06, 'square', .12);
-    if (isSolved(grid)){
-      win();
-    }
+    haptic(15);
+    if (isSolved(grid)){ win(); }
   }
   function win(){
     toast.classList.add('show');
     beep(523.25,.08,'square',.18); setTimeout(()=>beep(659.25,.08,'square',.18),100); setTimeout(()=>beep(783.99,.1,'square',.2),200);
+    haptic(30);
     setTimeout(()=>{
       toast.classList.remove('show');
       S.level++; localStorage.setItem('bitgrid.level', String(S.level));
@@ -187,7 +188,6 @@
     const rect = canvas.getBoundingClientRect();
     const px = (e.clientX - rect.left) * (canvas.width / rect.width);
     const py = (e.clientY - rect.top)  * (canvas.height/ rect.height);
-    // compute which cell
     const pad = 28;
     const size = S.size;
     const cellGap = S.cellPad;
@@ -251,18 +251,36 @@
     toast._t = setTimeout(()=>toast.classList.remove('show'), 1100);
   }
 
-  // Handle HiDPI resize
+  // Layout fit: choose the maximum canvas size that fits above controls/HUD
   function fit(){
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const el = canvas;
-    const cssSize = Math.min(window.innerWidth*0.92, 540);
-    el.style.width = cssSize+'px';
-    el.style.height= cssSize+'px';
-    el.width = Math.floor(cssSize * dpr);
-    el.height= Math.floor(cssSize * dpr);
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+
+    const headerH = header?.offsetHeight || 56;
+    const controlsH = Math.max(dpadBox?.offsetHeight || 120, actBox?.offsetHeight || 120);
+    const hudH = hud?.offsetHeight || 38;
+    const safePad = 24; // extra breathing
+
+    // Available square space (center stage)
+    const available = vh - headerH - controlsH - hudH - safePad*2;
+    const cssSize = Math.max(180, Math.min(540, vw*0.92, available));
+
+    // Position HUD just above controls
+    const bottomForHud = (controlsH + 20);
+    hud.style.bottom = `${bottomForHud}px`;
+
+    // Apply size
+    canvas.style.width = cssSize+'px';
+    canvas.style.height= cssSize+'px';
+    canvas.width = Math.floor(cssSize * dpr);
+    canvas.height= Math.floor(cssSize * dpr);
     ctx.setTransform(dpr,0,0,dpr,0,0);
+
     draw();
   }
   window.addEventListener('resize', fit);
-  fit();
+  window.addEventListener('orientationchange', fit);
+  // defer a tick to let layout compute sizes
+  setTimeout(fit, 0);
 })();
