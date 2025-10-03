@@ -5,97 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover, user-scalable=no">
   <meta name="theme-color" content="#1b1f2a">
   <title>BitGrid 64 — Retro PWA</title>
-
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="BitGrid64">
   <link rel="apple-touch-icon" href="assets/icon-192.png">
-
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="192x192" href="assets/icon-192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="assets/icon-512.png">
   <meta name="description" content="Rompicapo retro in stile Commodore 64 / ZX Spectrum. Togli le luci, superi i livelli. PWA nativa per iOS e Android.">
-
   <style>
-    :root {
-      --bg: #0b0f1a; --panel:#101626; --ink:#e7f2ff; --muted:#93a4c3; --accent:#46d369;
-      --c64-0:#40318d; --c64-1:#64ffff; --c64-2:#73ae58; --c64-3:#b86962;
-      --zx-0:#000000; --zx-1:#2aff2a; --zx-2:#ff2a2a; --zx-3:#2a2aff;
-    }
+    :root { --bg:#0b0f1a; --panel:#101626; --ink:#e7f2ff; --muted:#93a4c3; --accent:#46d369; }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family: system-ui,-apple-system,Segoe UI,Roboto,Inter}
     body{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
-    .crt {position: fixed; inset:0; pointer-events:none; opacity:.22;
-      background: repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 2px, transparent 2px 4px),
-                  radial-gradient(ellipse at center, rgba(255,255,255,.05), transparent 60%);
-      mix-blend-mode: overlay;}
-    .wrap{display:flex;flex-direction:column;min-height:100%;}
-    header{
-      display:flex;align-items:center;justify-content:space-between;gap:.75rem;
-      padding:.75rem 1rem;background:linear-gradient(0deg, #0e1524, #0a1222);
-      border-bottom:1px solid #1e2944; position:sticky; top:0; z-index:5;
-    }
+    .crt{position:fixed;inset:0;pointer-events:none;opacity:.18;background:
+      repeating-linear-gradient(0deg, rgba(255,255,255,.06) 0 2px, transparent 2px 4px),
+      radial-gradient(ellipse at center, rgba(255,255,255,.05), transparent 60%);mix-blend-mode:overlay}
+    .wrap{display:flex;flex-direction:column;min-height:100%}
+    header{display:flex;align-items:center;justify-content:space-between;gap:.75rem;
+      padding:.75rem 1rem;background:linear-gradient(0deg,#0e1524,#0a1222);border-bottom:1px solid #1e2944;position:sticky;top:0;z-index:5}
     .title{display:flex;align-items:center;gap:.6rem;font-weight:800;letter-spacing:.04em}
     .badge{font-size:.75rem;padding:.15rem .45rem;border:1px solid #2a375e;border-radius:.4rem;color:var(--muted)}
     .row{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
-    button.icon {
-      border:none;background:var(--panel);color:var(--ink);padding:.6rem;border-radius:.8rem;
-      display:flex;align-items:center;justify-content:center;width:44px;height:44px;
-      box-shadow:0 2px 0 #0a0f1b inset, 0 6px 20px rgba(0,0,0,.25);
-      transition:transform .06s ease, box-shadow .06s ease, background .2s;
-    }
-    button.icon:active{transform:translateY(1px);box-shadow:0 1px 0 #0a0f1b inset, 0 3px 12px rgba(0,0,0,.35);}
-    button.primary{background:linear-gradient(180deg, #1b2a3f, #0e1a2e); padding:.6rem .9rem; border-radius:.8rem; border:1px solid #274060}
-    main{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem;position:relative}
-    main{padding-bottom:calc(env(safe-area-inset-bottom) + 170px);}
-    canvas#game{aspect-ratio:1 / 1;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740}
-    .hud{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
-    .hud{bottom:calc(env(safe-area-inset-bottom) + 130px);}
+    button.icon{border:none;background:var(--panel);color:var(--ink);padding:.6rem;border-radius:.8rem;display:flex;align-items:center;justify-content:center;width:44px;height:44px;box-shadow:0 2px 0 #0a0f1b inset,0 6px 20px rgba(0,0,0,.25)}
+    button.primary{background:linear-gradient(180deg,#1b2a3f,#0e1a2e);padding:.6rem .9rem;border-radius:.8rem;border:1px solid #274060}
+    main{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem;position:relative;padding-bottom:calc(env(safe-area-inset-bottom) + 180px)}
+    /* Canvas visibly outlined for debugging, kept subtle */
+    canvas#game{display:block;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740, 0 0 0 1px #27314b}
+    .hud{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;bottom:calc(env(safe-area-inset-bottom) + 140px)}
     .pill{background:var(--panel);border:1px solid #27314b;border-radius:999px;padding:.3rem .7rem;color:var(--muted);font-size:.9rem}
-    .dpad{position:fixed;left:1rem;bottom:calc(0.9rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.3rem;opacity:.98;z-index:10}
+    .dpad{position:fixed;left:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.3rem;opacity:.98;z-index:10}
     .drow{display:flex;gap:.3rem;justify-content:center}
-    .btn{width:54px;height:54px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);
-         border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);
-         display:flex;align-items:center;justify-content:center;font-weight:800;color:#cfe3ff;font-size:20px}
-    .btn:active{transform:translateY(2px)}
-    .act{position:fixed;right:1rem;bottom:calc(0.9rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;opacity:.98;z-index:10}
-    .a,.b{width:60px;height:60px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);
-      box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;
-      font-weight:900;color:#e7f2ff;font-size:22px}
+    .btn{width:54px;height:54px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322,0 12px 28px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-weight:800;color:#cfe3ff;font-size:20px}
+    .act{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;opacity:.98;z-index:10}
+    .a,.b{width:60px;height:60px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);box-shadow:inset 0 2px 0 #0a1322,0 12px 28px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-weight:900;color:#e7f2ff;font-size:22px}
     .toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);background:#0e1a2e;border:1px solid #274060;padding:.6rem 1rem;border-radius:.7rem;color:var(--ink);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s; box-shadow:0 14px 40px rgba(0,0,0,.35)}
     .toast.show{opacity:1;transform:translate(-50%,0)}
     .panel{position:fixed;inset:0;background:rgba(3,6,12,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:20}
     .card{width:min(92vw,560px);background:#0f1830;border:1px solid #27314b;border-radius:1rem;padding:1rem;box-shadow:0 18px 60px rgba(0,0,0,.5)}
-    .card h2{margin:.2rem 0 0.5rem 0}
-    .card p{color:var(--muted);margin:.2rem 0 1rem 0}
-    .grid-theme{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
-    .swatch{height:36px;border-radius:.6rem;border:1px solid #27314b}
-    .foot{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap}
-    .link{color:var(--accent);text-decoration:none}
-    .hidden{display:none}
-    /* Tutorial overlay */
-    .tutorial{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,16,.78);backdrop-filter:blur(4px);z-index:30}
-    .tcard{width:min(92vw,560px);background:#0f1830;border:1px solid #27314b;border-radius:1rem;padding:1rem 1rem 0.6rem;box-shadow:0 18px 60px rgba(0,0,0,.6)}
-    .tcard h3{margin:.2rem 0 .6rem 0}
-    .tsteps{color:var(--muted)}
-    .tfoot{display:flex;justify-content:flex-end;gap:.6rem;margin-top:.6rem;padding:.4rem 0 .6rem}
-    .btnx{background:var(--panel);border:1px solid #274060;border-radius:.7rem;padding:.45rem .8rem;color:var(--ink)}
   </style>
 </head>
 <body>
   <div class="wrap">
     <header>
       <div class="title">
-        <span style="display:inline-block;width:18px;height:18px;border-radius:3px;background:linear-gradient(45deg,var(--c64-1),var(--c64-2));box-shadow:0 0 12px rgba(70,211,105,.6)"></span>
+        <span style="display:inline-block;width:18px;height:18px;border-radius:3px;background:linear-gradient(45deg,#64ffff,#73ae58);box-shadow:0 0 12px rgba(70,211,105,.6)"></span>
         <span>BitGrid 64</span>
         <span class="badge">PWA</span>
         <span class="badge">Retro</span>
       </div>
       <div class="row">
-        <button class="icon" id="btnTheme" aria-label="Cambia tema" title="Cambia tema">🎨</button>
-        <button class="icon" id="btnSound" aria-label="Audio on/off" title="Audio on/off">🔊</button>
-        <button class="icon" id="btnHelp" aria-label="Come si gioca" title="Come si gioca">❓</button>
-        <button class="icon primary" id="btnShuffle" aria-label="Nuovo livello" title="Nuovo livello">▶︎</button>
+        <button class="icon" id="btnTheme" title="Cambia tema">🎨</button>
+        <button class="icon" id="btnSound" title="Audio on/off">🔊</button>
+        <button class="icon" id="btnHelp" title="Come si gioca">❓</button>
+        <button class="icon primary" id="btnShuffle" title="Nuovo livello">▶︎</button>
       </div>
     </header>
 
@@ -107,7 +70,6 @@
         <span class="pill">Obiettivo: <b id="target">spente</b></span>
       </div>
 
-      <!-- Labeled controls -->
       <div class="dpad" aria-hidden="true">
         <div class="drow"><div class="btn" id="up">▲</div></div>
         <div class="drow"><div class="btn" id="left">◀</div><div class="btn" id="down">▼</div><div class="btn" id="right">▶</div></div>
@@ -122,49 +84,13 @@
     <div class="panel" id="panel">
       <div class="card">
         <h2>Come si gioca</h2>
-        <p><strong>Obiettivo:</strong> spegni tutte le celle della griglia. Tocca una cella per invertirla insieme alle adiacenti (stile <em>Lights Out</em>). Completa con meno mosse possibili.</p>
-        <div class="grid-theme" style="margin:.6rem 0 1rem 0">
-          <div class="swatch" style="background:linear-gradient(90deg, var(--c64-0), var(--c64-1))"></div>
-          <div class="swatch" style="background:linear-gradient(90deg, var(--c64-2), var(--c64-3))"></div>
-          <div class="swatch" style="background:linear-gradient(90deg, var(--zx-1), var(--zx-2))"></div>
-          <div class="swatch" style="background:linear-gradient(90deg, var(--zx-3), var(--zx-1))"></div>
-        </div>
-        <p><strong>Controlli:</strong> D‑Pad muove il cursore; <b>A</b> attiva la cella; <b>B</b> crea un nuovo schema. Oppure tocca direttamente la griglia.</p>
-        <div class="foot">
-          <small>© 2025 pezzaliAPP — MIT</small>
-          <a class="link" href="./readme.html">Istruzioni</a>
-        </div>
+        <p><strong>Obiettivo:</strong> spegni tutte le celle. Tocca una cella per invertire lei e le adiacenti (↑ ↓ ← →). Completa con meno mosse possibili.</p>
+        <small>© 2025 pezzaliAPP — MIT</small>
       </div>
     </div>
-
-    <!-- Tutorial -->
-    <div class="tutorial" id="tut">
-      <div class="tcard">
-        <h3>Come funziona</h3>
-        <div class="tsteps">
-          <ol>
-            <li>Tocca una cella <em>accesa</em>: si invertirá <b>lei</b> e le <b>adiacenti</b> (↑ ↓ ← →).</li>
-            <li>Ripeti finché <b>tutte</b> sono <em>spente</em>.</li>
-            <li>Puoi usare il D‑Pad per muovere il cursore, <b>A</b> per attivare, <b>B</b> per un nuovo schema.</li>
-          </ol>
-        </div>
-        <div class="tfoot">
-          <button class="btnx" id="tutSkip">Salta</button>
-          <button class="btnx" id="tutStart">Prova ora</button>
-        </div>
-      </div>
-    </div>
-
   </div>
   <div class="crt"></div>
-
   <script src="app.js"></script>
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js');
-      });
-    }
-  </script>
+  <script>if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}</script>
 </body>
 </html>
