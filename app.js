@@ -13,6 +13,8 @@
   const lvlEl = document.getElementById('lvl');
   const movesEl = document.getElementById('moves');
   const targetEl = document.getElementById('target');
+  const scoreEl = document.getElementById('score');
+  const bestEl  = document.getElementById('best');
   const panel = document.getElementById('panel');
   const toast = document.getElementById('toast');
 
@@ -41,6 +43,10 @@
     level: parseInt(localStorage.getItem('bitgrid.level')||'1',10),
     moves: 0,
     cursor: {x:0,y:0},
+    score: parseInt(localStorage.getItem('bitgrid.score')||'0',10),
+    best:  parseInt(localStorage.getItem('bitgrid.best')||'0',10),
+    parSteps: 0,
+    startT: 0,
   };
 
   function makeSolved(n){ return new Array(n*n).fill(0); }
@@ -59,7 +65,9 @@
     grid = makeSolved(S.size);
     const rnd = (m) => Math.floor(Math.random()*m);
     for(let i=0;i<steps;i++) toggleAt(grid, rnd(S.size), rnd(S.size));
+    S.parSteps = steps;
     S.moves = 0; S.cursor={x:Math.floor(S.size/2), y:Math.floor(S.size/2)};
+    S.startT = performance.now();
     updateHUD(); draw();
   }
 
@@ -67,6 +75,8 @@
     lvlEl.textContent = `Livello ${S.level}`;
     movesEl.textContent = S.moves;
     targetEl.textContent = "spente";
+    if (scoreEl) scoreEl.textContent = S.score;
+    if (bestEl)  bestEl.textContent  = S.best;
   }
 
   // --- Audio ---
@@ -167,10 +177,23 @@
     if (grid.every(v=>v===0)) win();
   }
   function win(){
+    const timeSec = (performance.now() - S.startT)/1000;
+    const base = 1000;
+    const overPar = Math.max(0, S.moves - (S.parSteps||0));
+    const movePenalty = 10 * overPar;
+    const timeBonus = Math.max(0, Math.min(300, 300 - Math.floor(timeSec * 5)));
+    const levelMult = 1 + (S.level - 1) * 0.05;
+    const gained = Math.max(0, Math.round((base + timeBonus - movePenalty) * levelMult));
+    S.score += gained;
+    if (S.score > S.best) S.best = S.score;
+    localStorage.setItem('bitgrid.score', String(S.score));
+    localStorage.setItem('bitgrid.best',  String(S.best));
+    toastMsg(`+${gained} punti`);
+
     toast.classList.add('show');
     beep(523.25,.08,'square',.18); setTimeout(()=>beep(659.25,.08,'square',.18),100); setTimeout(()=>beep(783.99,.1,'square',.2),200);
     haptic(30);
-    setTimeout(()=>{ toast.classList.remove('show'); S.level++; localStorage.setItem('bitgrid.level', String(S.level)); scramble(Math.min(5 + S.level, 18)); }, 900);
+    setTimeout(()=>{ toast.classList.remove('show'); S.level++; localStorage.setItem('bitgrid.level', String(S.level)); scramble(Math.min(5 + S.level, 18)); updateHUD(); }, 900);
   }
 
   canvas.addEventListener('pointerdown', (e)=>{
@@ -221,6 +244,8 @@
   btnSound.addEventListener('click', ()=>{
     S.sound = !S.sound;
     localStorage.setItem('bitgrid.sound', S.sound ? 'on':'off');
+    btnSound.textContent = S.sound ? '🔊' : '🔇';
+    btnSound.setAttribute('aria-label', S.sound ? 'Audio attivo' : 'Audio disattivo');
     toastMsg(S.sound ? 'Audio attivo' : 'Audio muto');
   });
   btnHelp.addEventListener('click', ()=>{ panel.style.display = 'flex'; });

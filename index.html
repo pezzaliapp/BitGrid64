@@ -68,6 +68,8 @@
         <span class="pill" id="lvl">Livello 1</span>
         <span class="pill">Mosse: <b id="moves">0</b></span>
         <span class="pill">Obiettivo: <b id="target">spente</b></span>
+        <span class="pill">Punti: <b id="score">0</b></span>
+        <span class="pill">Record: <b id="best">0</b></span>
       </div>
 
       <div class="dpad" aria-hidden="true">
@@ -85,12 +87,15 @@
       <div class="card">
         <h2>Come si gioca</h2>
         <p><strong>Obiettivo:</strong> spegni tutte le celle. Tocca una cella per invertire lei e le adiacenti (↑ ↓ ← →). Completa con meno mosse possibili.</p>
-        <small>© 2025 pezzaliAPP — MIT</small>
+        <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:.6rem;">
+          <button id="btnCloseHelp" style="padding:.5rem .9rem;border:none;border-radius:.6rem;background:#274060;color:#fff;font-weight:700;cursor:pointer">Chiudi</button>
+        </div>
+        <small style="display:block;margin-top:.6rem;">© 2025 pezzaliAPP — MIT</small>
       </div>
     </div>
   </div>
   <div class="crt"></div>
-  <script src="app.js"></script>
+  <script src="app.js?v=1601"></script>
   <script>if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}</script>
 </body>
 </html>
