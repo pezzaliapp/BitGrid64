@@ -57,6 +57,7 @@
       <div class="row">
         <button class="icon" id="btnTheme" title="Cambia tema">🎨</button>
         <button class="icon" id="btnSound" title="Audio on/off">🔊</button>
+        <button class="icon" id="btnStats" title="Statistiche / PAR">🧮</button>
         <button class="icon" id="btnHelp" title="Come si gioca">❓</button>
         <button class="icon primary" id="btnShuffle" title="Nuovo livello">▶︎</button>
       </div>
@@ -93,9 +94,24 @@
         <small style="display:block;margin-top:.6rem;">© 2025 pezzaliAPP — MIT</small>
       </div>
     </div>
+  
+    <div class="panel" id="panelStats" style="display:none;">
+      <div class="card">
+        <h2>Statistiche</h2>
+        <p><strong>Livello:</strong> <span id="statLevel">—</span></p>
+        <p><strong>PAR (stimato):</strong> <span id="statPar">—</span> <small style="color:#93a4c3">(minimo teorico in arrivo)</small></p>
+        <p><strong>Mosse attuali:</strong> <span id="statMoves">—</span></p>
+        <p><strong>Punteggio:</strong> <span id="statScore">—</span> — <strong>Record:</strong> <span id="statBest">—</span></p>
+        <div style="display:flex;justify-content:flex-end;gap:.6rem;margin-top:.6rem;">
+          <button id="btnCloseStats" style="padding:.5rem .9rem;border:none;border-radius:.6rem;background:#274060;color:#fff;font-weight:700;cursor:pointer">Chiudi</button>
+        </div>
+        <small style="display:block;margin-top:.6rem;">© 2025 pezzaliAPP — MIT</small>
+      </div>
+    </div>
+
   </div>
   <div class="crt"></div>
-  <script src="app.js?v=1601"></script>
+  <script src="app.js?v=1701"></script>
   <script>if('serviceWorker'in navigator){addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))}</script>
 </body>
 </html>

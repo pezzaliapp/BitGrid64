@@ -21,8 +21,16 @@
   const btnTheme = document.getElementById('btnTheme');
   const btnSound = document.getElementById('btnSound');
   const btnHelp  = document.getElementById('btnHelp');
+  const btnStats = document.getElementById('btnStats');
   const btnShuffle = document.getElementById('btnShuffle');
   const btnCloseHelp = document.getElementById('btnCloseHelp');
+  const panelStats = document.getElementById('panelStats');
+  const btnCloseStats = document.getElementById('btnCloseStats');
+  const statLevel = document.getElementById('statLevel');
+  const statPar = document.getElementById('statPar');
+  const statMoves = document.getElementById('statMoves');
+  const statScore = document.getElementById('statScore');
+  const statBest = document.getElementById('statBest');
 
   const dpad = {up:document.getElementById('up'),down:document.getElementById('down'),left:document.getElementById('left'),right:document.getElementById('right')};
   const actA = document.getElementById('actA');
@@ -253,6 +261,21 @@
   panel.addEventListener('click', (e)=>{ if(e.target === panel) panel.style.display = 'none'; });
   addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panel.style.display==='flex') panel.style.display='none'; });
   btnShuffle.addEventListener('click', ()=>scramble(Math.min(5 + S.level, 18)));
+  btnStats?.addEventListener('click', openStats);
+  btnCloseStats?.addEventListener('click', ()=>{ if(panelStats) panelStats.style.display='none'; });
+  panelStats?.addEventListener('click', (e)=>{ if(e.target===panelStats) panelStats.style.display='none'; });
+  addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panelStats && panelStats.style.display==='flex') panelStats.style.display='none'; });
+
+  
+  function openStats(){
+    if (!panelStats) return;
+    if (statLevel) statLevel.textContent = S.level;
+    if (statPar)   statPar.textContent   = (S.parSteps ?? '—');
+    if (statMoves) statMoves.textContent = S.moves;
+    if (statScore) statScore.textContent = S.score ?? 0;
+    if (statBest)  statBest.textContent  = S.best ?? 0;
+    panelStats.style.display = 'flex';
+  }
 
   function toastMsg(s){
     toast.textContent = s;
