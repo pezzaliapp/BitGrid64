@@ -1,8 +1,7 @@
-/* BitGrid 64 — v1.1 (©2025 pezzaliAPP, MIT)
- * Fix: canvas non tagliato su iPhone
- * - Calcolo dimensione canvas in base a viewport, header, HUD e controlli
- * - HUD rialzata sopra i controlli
- * - Pulsanti più piccoli, vibrazione haptics
+/* BitGrid 64 — v1.2 (©2025 pezzaliAPP, MIT)
+ * - Celle pixel-perfect (niente bordi spezzati)
+ * - Pulsanti etichettati (D-Pad ▲▼◀▶, A/B)
+ * - Tutorial al primo avvio
  */
 (() => {
   const canvas = document.getElementById('game');
@@ -12,6 +11,9 @@
   const targetEl = document.getElementById('target');
   const panel = document.getElementById('panel');
   const toast = document.getElementById('toast');
+  const tut = document.getElementById('tut');
+  const tutStart = document.getElementById('tutStart');
+  const tutSkip = document.getElementById('tutSkip');
 
   const btnTheme = document.getElementById('btnTheme');
   const btnSound = document.getElementById('btnSound');
@@ -96,14 +98,24 @@
   }
 
   // --- Drawing ---
+  let DPR = 1;
+  function logicalSize(){ return {w: canvas.width / DPR, h: canvas.height / DPR}; }
+
   function draw(){
-    const w = canvas.width, h = canvas.height;
+    const {w, h} = logicalSize();
+    ctx.save();
+    ctx.setTransform(DPR,0,0,DPR,0,0); // ensure logical units
     ctx.clearRect(0,0,w,h);
+
     const pad = 28;
     const size = S.size;
     const cellGap = S.cellPad;
-    const cellSize = Math.floor((w - pad*2 - cellGap*(size-1))/size);
-    const ox = Math.floor((w - (cellSize*size + cellGap*(size-1)))/2);
+
+    // compute integer cell size to avoid half pixels
+    const available = w - pad*2 - cellGap*(size-1);
+    const cellSize = Math.floor(available / size);
+    const total = cellSize*size + cellGap*(size-1);
+    const ox = Math.floor((w - total)/2);
     const oy = ox;
 
     const palette = (S.theme==='c64')
@@ -146,6 +158,8 @@
       ctx.fillStyle = 'rgba(255,255,255,0.02)';
       ctx.fillRect(0,i,w,1);
     }
+
+    ctx.restore();
   }
 
   function roundRect(ctx, x, y, w, h, r, fill, stroke) {
@@ -186,14 +200,20 @@
 
   canvas.addEventListener('pointerdown', (e)=>{
     const rect = canvas.getBoundingClientRect();
-    const px = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const py = (e.clientY - rect.top)  * (canvas.height/ rect.height);
+    const px = (e.clientX - rect.left);
+    const py = (e.clientY - rect.top);
+
+    // use logical coordinates
+    const {w, h} = logicalSize();
     const pad = 28;
     const size = S.size;
     const cellGap = S.cellPad;
-    const cellSize = Math.floor((canvas.width - pad*2 - cellGap*(size-1))/size);
-    const ox = Math.floor((canvas.width - (cellSize*size + cellGap*(size-1)))/2);
+    const available = w - pad*2 - cellGap*(size-1);
+    const cellSize = Math.floor(available / size);
+    const total = cellSize*size + cellGap*(size-1);
+    const ox = Math.floor((w - total)/2);
     const oy = ox;
+
     for (let y=0;y<size;y++){
       for (let x=0;x<size;x++){
         const cx = ox + x*(cellSize+cellGap);
@@ -251,9 +271,10 @@
     toast._t = setTimeout(()=>toast.classList.remove('show'), 1100);
   }
 
-  // Layout fit: choose the maximum canvas size that fits above controls/HUD
+  // Layout fit with DPR
   function fit(){
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    DPR = dpr;
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
@@ -262,25 +283,29 @@
     const hudH = hud?.offsetHeight || 38;
     const safePad = 24; // extra breathing
 
-    // Available square space (center stage)
     const available = vh - headerH - controlsH - hudH - safePad*2;
-    const cssSize = Math.max(180, Math.min(540, vw*0.92, available));
+    const cssSize = Math.max(200, Math.min(560, vw*0.92, available));
 
-    // Position HUD just above controls
-    const bottomForHud = (controlsH + 20);
-    hud.style.bottom = `${bottomForHud}px`;
+    hud.style.bottom = `${(controlsH + 24)}px`;
 
-    // Apply size
     canvas.style.width = cssSize+'px';
     canvas.style.height= cssSize+'px';
     canvas.width = Math.floor(cssSize * dpr);
     canvas.height= Math.floor(cssSize * dpr);
-    ctx.setTransform(dpr,0,0,dpr,0,0);
 
     draw();
   }
   window.addEventListener('resize', fit);
   window.addEventListener('orientationchange', fit);
-  // defer a tick to let layout compute sizes
   setTimeout(fit, 0);
+
+  // --- Tutorial ---
+  const done = localStorage.getItem('bitgrid.tutorialDone') === '1';
+  if (!done) tut.style.display = 'flex';
+  function closeTut(){
+    tut.style.display = 'none';
+    localStorage.setItem('bitgrid.tutorialDone','1');
+  }
+  tutStart?.addEventListener('click', closeTut);
+  tutSkip?.addEventListener('click', closeTut);
 })();

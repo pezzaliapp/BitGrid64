@@ -18,21 +18,16 @@
 
   <style>
     :root {
-      --bg: #0b0f1a;
-      --panel: #101626;
-      --ink: #e7f2ff;
-      --muted:#93a4c3;
-      --accent:#46d369;
-      --danger:#ff4669;
+      --bg: #0b0f1a; --panel:#101626; --ink:#e7f2ff; --muted:#93a4c3; --accent:#46d369;
       --c64-0:#40318d; --c64-1:#64ffff; --c64-2:#73ae58; --c64-3:#b86962;
       --zx-0:#000000; --zx-1:#2aff2a; --zx-2:#ff2a2a; --zx-3:#2a2aff;
     }
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
     html,body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";}
     body{padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);}
-    .crt {position: fixed; inset:0; pointer-events:none; opacity:.25;
+    .crt {position: fixed; inset:0; pointer-events:none; opacity:.22;
       background: repeating-linear-gradient(0deg, rgba(255,255,255,.07) 0 2px, transparent 2px 4px),
-                  radial-gradient(ellipse at center, rgba(255,255,255,.06), transparent 60%);
+                  radial-gradient(ellipse at center, rgba(255,255,255,.05), transparent 60%);
       mix-blend-mode: overlay;}
     .wrap{display:flex;flex-direction:column;min-height:100%;}
     header{
@@ -52,18 +47,21 @@
     button.icon:active{transform:translateY(1px);box-shadow:0 1px 0 #0a0f1b inset, 0 3px 12px rgba(0,0,0,.35);}
     button.primary{background:linear-gradient(180deg, #1b2a3f, #0e1a2e); padding:.6rem .9rem; border-radius:.8rem; border:1px solid #274060}
     main{flex:1;display:flex;align-items:center;justify-content:center;padding:1rem;position:relative}
-    /* Reserve space at bottom for controls so the canvas never ends under Safari bar */
-    main{padding-bottom:calc(env(safe-area-inset-bottom) + 160px);}
-    canvas#game{aspect-ratio:1;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740}
+    main{padding-bottom:calc(env(safe-area-inset-bottom) + 170px);}
+    canvas#game{aspect-ratio:1 / 1;border-radius:1rem;background:#060912;box-shadow:0 10px 40px rgba(0,0,0,.45), inset 0 0 0 1px #1d2740}
     .hud{position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center}
-    .hud{bottom:calc(env(safe-area-inset-bottom) + 120px);}
+    .hud{bottom:calc(env(safe-area-inset-bottom) + 130px);}
     .pill{background:var(--panel);border:1px solid #27314b;border-radius:999px;padding:.3rem .7rem;color:var(--muted);font-size:.9rem}
-    .dpad{position:fixed;left:1rem;bottom:calc(0.8rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.3rem;opacity:.96;z-index:10}
+    .dpad{position:fixed;left:1rem;bottom:calc(0.9rem + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:.3rem;opacity:.98;z-index:10}
     .drow{display:flex;gap:.3rem;justify-content:center}
-    .btn{width:52px;height:52px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
+    .btn{width:54px;height:54px;border-radius:1rem;background:linear-gradient(180deg,#1b2a3f,#0e1a2e);
+         border:1px solid #274060;box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);
+         display:flex;align-items:center;justify-content:center;font-weight:800;color:#cfe3ff;font-size:20px}
     .btn:active{transform:translateY(2px)}
-    .act{position:fixed;right:1rem;bottom:calc(0.8rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;opacity:.96;z-index:10}
-    .a,.b{width:58px;height:58px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);}
+    .act{position:fixed;right:1rem;bottom:calc(0.9rem + env(safe-area-inset-bottom));display:flex;gap:.5rem;opacity:.98;z-index:10}
+    .a,.b{width:60px;height:60px;border-radius:999px;border:1px solid #274060;background:radial-gradient(circle at 30% 25%, #274060, #0e1a2e);
+      box-shadow:inset 0 2px 0 #0a1322, 0 12px 28px rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;
+      font-weight:900;color:#e7f2ff;font-size:22px}
     .toast{position:fixed;left:50%;top:72px;transform:translateX(-50%);background:#0e1a2e;border:1px solid #274060;padding:.6rem 1rem;border-radius:.7rem;color:var(--ink);opacity:0;pointer-events:none;transition:opacity .25s, transform .25s; box-shadow:0 14px 40px rgba(0,0,0,.35)}
     .toast.show{opacity:1;transform:translate(-50%,0)}
     .panel{position:fixed;inset:0;background:rgba(3,6,12,.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;z-index:20}
@@ -75,6 +73,13 @@
     .foot{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap}
     .link{color:var(--accent);text-decoration:none}
     .hidden{display:none}
+    /* Tutorial overlay */
+    .tutorial{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(5,8,16,.78);backdrop-filter:blur(4px);z-index:30}
+    .tcard{width:min(92vw,560px);background:#0f1830;border:1px solid #27314b;border-radius:1rem;padding:1rem 1rem 0.6rem;box-shadow:0 18px 60px rgba(0,0,0,.6)}
+    .tcard h3{margin:.2rem 0 .6rem 0}
+    .tsteps{color:var(--muted)}
+    .tfoot{display:flex;justify-content:flex-end;gap:.6rem;margin-top:.6rem;padding:.4rem 0 .6rem}
+    .btnx{background:var(--panel);border:1px solid #274060;border-radius:.7rem;padding:.45rem .8rem;color:var(--ink)}
   </style>
 </head>
 <body>
@@ -101,13 +106,15 @@
         <span class="pill">Mosse: <b id="moves">0</b></span>
         <span class="pill">Obiettivo: <b id="target">spente</b></span>
       </div>
+
+      <!-- Labeled controls -->
       <div class="dpad" aria-hidden="true">
-        <div class="drow"><div class="btn" id="up"></div></div>
-        <div class="drow"><div class="btn" id="left"></div><div class="btn" id="down"></div><div class="btn" id="right"></div></div>
+        <div class="drow"><div class="btn" id="up">▲</div></div>
+        <div class="drow"><div class="btn" id="left">◀</div><div class="btn" id="down">▼</div><div class="btn" id="right">▶</div></div>
       </div>
       <div class="act" aria-hidden="true">
-        <div class="a" id="actA" title="Conferma / Toggle"></div>
-        <div class="b" id="actB" title="Mescola / Nuovo"></div>
+        <div class="a" id="actA" title="Attiva">A</div>
+        <div class="b" id="actB" title="Nuovo">B</div>
       </div>
     </main>
 
@@ -122,13 +129,32 @@
           <div class="swatch" style="background:linear-gradient(90deg, var(--zx-1), var(--zx-2))"></div>
           <div class="swatch" style="background:linear-gradient(90deg, var(--zx-3), var(--zx-1))"></div>
         </div>
-        <p><strong>Controlli:</strong> tocca le celle. Su tastiera: frecce/WASD per muovere il cursore, Invio/Spazio per attivare. Pulsanti A/B su mobile per attivare/nuovo.</p>
+        <p><strong>Controlli:</strong> D‑Pad muove il cursore; <b>A</b> attiva la cella; <b>B</b> crea un nuovo schema. Oppure tocca direttamente la griglia.</p>
         <div class="foot">
           <small>© 2025 pezzaliAPP — MIT</small>
           <a class="link" href="./readme.html">Istruzioni</a>
         </div>
       </div>
     </div>
+
+    <!-- Tutorial -->
+    <div class="tutorial" id="tut">
+      <div class="tcard">
+        <h3>Come funziona</h3>
+        <div class="tsteps">
+          <ol>
+            <li>Tocca una cella <em>accesa</em>: si invertirá <b>lei</b> e le <b>adiacenti</b> (↑ ↓ ← →).</li>
+            <li>Ripeti finché <b>tutte</b> sono <em>spente</em>.</li>
+            <li>Puoi usare il D‑Pad per muovere il cursore, <b>A</b> per attivare, <b>B</b> per un nuovo schema.</li>
+          </ol>
+        </div>
+        <div class="tfoot">
+          <button class="btnx" id="tutSkip">Salta</button>
+          <button class="btnx" id="tutStart">Prova ora</button>
+        </div>
+      </div>
+    </div>
+
   </div>
   <div class="crt"></div>
 
