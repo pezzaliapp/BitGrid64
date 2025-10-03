@@ -20,6 +20,7 @@
   const btnSound = document.getElementById('btnSound');
   const btnHelp  = document.getElementById('btnHelp');
   const btnShuffle = document.getElementById('btnShuffle');
+  const btnCloseHelp = document.getElementById('btnCloseHelp');
 
   const dpad = {up:document.getElementById('up'),down:document.getElementById('down'),left:document.getElementById('left'),right:document.getElementById('right')};
   const actA = document.getElementById('actA');
@@ -222,9 +223,10 @@
     localStorage.setItem('bitgrid.sound', S.sound ? 'on':'off');
     toastMsg(S.sound ? 'Audio attivo' : 'Audio muto');
   });
-  btnHelp.addEventListener('click', ()=>{
-    panel.style.display = panel.style.display==='flex' ? 'none' : 'flex';
-  });
+  btnHelp.addEventListener('click', ()=>{ panel.style.display = 'flex'; });
+  btnCloseHelp?.addEventListener('click', ()=>{ panel.style.display = 'none'; });
+  panel.addEventListener('click', (e)=>{ if(e.target === panel) panel.style.display = 'none'; });
+  addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panel.style.display==='flex') panel.style.display='none'; });
   btnShuffle.addEventListener('click', ()=>scramble(Math.min(5 + S.level, 18)));
 
   function toastMsg(s){
