@@ -36,7 +36,7 @@
   const actA = document.getElementById('actA');
   const actB = document.getElementById('actB');
 
-  // MANCAVANO: usati in fit()
+  // usati in fit()
   const header = document.querySelector('header');
   const hud = document.querySelector('.hud');
   const dpadBox = document.querySelector('.dpad');
@@ -55,6 +55,7 @@
     best:  parseInt(localStorage.getItem('bitgrid.best')||'0',10),
     parSteps: 0,
     startT: 0,
+    solved: false,          // <-- NEW: stato livello risolto / no
   };
 
   function makeSolved(n){ return new Array(n*n).fill(0); }
@@ -74,15 +75,17 @@
     const rnd = (m) => Math.floor(Math.random()*m);
     for(let i=0;i<steps;i++) toggleAt(grid, rnd(S.size), rnd(S.size));
     S.parSteps = steps;
-    S.moves = 0; S.cursor={x:Math.floor(S.size/2), y:Math.floor(S.size/2)};
+    S.moves = 0;
+    S.cursor = {x:Math.floor(S.size/2), y:Math.floor(S.size/2)};
     S.startT = performance.now();
+    S.solved = false;       // <-- NEW: reset alla partenza del livello
     updateHUD(); draw();
   }
 
   function updateHUD(){
     lvlEl.textContent = `Livello ${S.level}`;
     movesEl.textContent = S.moves;
-    targetEl.textContent = "spente";
+    targetEl.textContent = S.solved ? '✅ Risolto!' : 'spente'; // <-- NEW: testo dinamico
     if (scoreEl) scoreEl.textContent = S.score;
     if (bestEl)  bestEl.textContent  = S.best;
   }
@@ -184,7 +187,12 @@
     beep(220, .06, 'square', .12); haptic(15);
     if (grid.every(v=>v===0)) win();
   }
+
   function win(){
+    // segna risolto e aggiorna HUD subito
+    S.solved = true;       // <-- NEW
+    updateHUD();           // <-- NEW
+
     const timeSec = (performance.now() - S.startT)/1000;
     const base = 1000;
     const overPar = Math.max(0, S.moves - (S.parSteps||0));
@@ -199,9 +207,17 @@
     toastMsg(`+${gained} punti`);
 
     toast.classList.add('show');
-    beep(523.25,.08,'square',.18); setTimeout(()=>beep(659.25,.08,'square',.18),100); setTimeout(()=>beep(783.99,.1,'square',.2),200);
+    beep(523.25,.08,'square',.18);
+    setTimeout(()=>beep(659.25,.08,'square',.18),100);
+    setTimeout(()=>beep(783.99,.1,'square',.2),200);
     haptic(30);
-    setTimeout(()=>{ toast.classList.remove('show'); S.level++; localStorage.setItem('bitgrid.level', String(S.level)); scramble(Math.min(5 + S.level, 18)); updateHUD(); }, 900);
+    setTimeout(()=>{
+      toast.classList.remove('show');
+      S.level++;
+      localStorage.setItem('bitgrid.level', String(S.level));
+      scramble(Math.min(5 + S.level, 18));
+      updateHUD();
+    }, 900);
   }
 
   canvas.addEventListener('pointerdown', (e)=>{
@@ -266,7 +282,6 @@
   panelStats?.addEventListener('click', (e)=>{ if(e.target===panelStats) panelStats.style.display='none'; });
   addEventListener('keydown', (e)=>{ if(e.key==='Escape' && panelStats && panelStats.style.display==='flex') panelStats.style.display='none'; });
 
-  
   function openStats(){
     if (!panelStats) return;
     if (statLevel) statLevel.textContent = S.level;
